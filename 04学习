@@ -1,0 +1,13 @@
+# 定义工作目录变量，方便以后多次使用
+wd=~/github/QIIME2ChineseManual/2021.2
+mkdir -p $wd
+# 进入工作目录，是不是很简介，这样无论你在什么位置就可以快速回到项目文件夹
+cd $wd
+
+# 方法1. 进入QIIME 2 conda工作环境
+conda activate qiime2-2021.2
+# 这时我们的命令行前面出现 (qiime2-2021.2) 表示成功进入工作环境
+
+# 创建本节学习目录
+mkdir moving-pictures
+cd moving-pictures
