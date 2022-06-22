@@ -1,11 +1,11 @@
 # 定义工作目录变量，方便以后多次使用
-wd=~/github/QIIME2ChineseManual/2021.2
+wd=~/github/lpz1999/qiime2
 mkdir -p $wd
 # 进入工作目录，是不是很简介，这样无论你在什么位置就可以快速回到项目文件夹
 cd $wd
 
 # 方法1. 进入QIIME 2 conda工作环境
-conda activate qiime2-2021.2
+conda activate qiime2-2022.2
 # 这时我们的命令行前面出现 (qiime2-2021.2) 表示成功进入工作环境
 
 # 创建本节学习目录
@@ -49,7 +49,17 @@ time qiime demux summarize \
   
   #DADA2 扩增子上游全部分析
   #单端 dada2 denoise-single
+  #两个用于质量过滤的参数：--p-trim-left m，它去除每个序列的前m个碱基(如引物、标签序列barcode)；等长，去除后面
+                         --p-trunc-len n，它在位置n截断每个序列。这允许用户去除序列的低质量区域、引物或标签序列等
   
-  
-  
+  time qiime dada2 denoise-single \
+  --i-demultiplexed-seqs demux.qza \
+  --p-trim-left 0 \
+  --p-trunc-len 120 \
+  #带源序列
+  --o-representative-sequences rep-seqs-dada2.qza \
+  #特征表
+  --o-table table-dada2.qza \
+  #统计过程
+  --o-denoising-stats stats-dada2.qza
   
