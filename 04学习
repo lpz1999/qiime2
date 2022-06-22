@@ -11,3 +11,45 @@ conda activate qiime2-2021.2
 # 创建本节学习目录
 mkdir moving-pictures
 cd moving-pictures
+
+#下载元数据
+wget -c http://210.75.224.110/github/QIIME2ChineseManual/2021.2/moving-pictures/sample-metadata.tsv
+
+#下载数据序列
+mkdir -p emp-single-end-sequences
+# 3.6M
+wget \
+  -O "emp-single-end-sequences/barcodes.fastq.gz" \
+  "https://data.qiime2.org/2021.2/tutorials/moving-pictures/emp-single-end-sequences/barcodes.fastq.gz"
+# 24M
+wget \
+  -O "emp-single-end-sequences/sequences.fastq.gz" \
+  "https://data.qiime2.org/2021.2/tutorials/moving-pictures/emp-single-end-sequences/sequences.fastq.gz"
+  
+  # metadata自己填写，sequences测序公司给出
+
+# 拆分样品
+time qiime tools import \
+  --type EMPSingleEndSequences \
+  --input-path emp-single-end-sequences \
+  --output-path emp-single-end-sequences.qza
+  
+#结果统计
+time qiime demux summarize \
+  --i-data demux.qza \
+  --o-visualization demux.qzv
+  
+  # qza qiime zip artificial  qzv qiime zip vi
+  
+  #用qiimeview看
+  #图2. 交互式质量图Interactive Qaulity Plot
+  #质量在30以上比较好，至少二十
+  
+  #序列质控和生成特征表
+  
+  #DADA2 扩增子上游全部分析
+  #单端 dada2 denoise-single
+  
+  
+  
+  
