@@ -121,3 +121,116 @@ qiime feature-table tabulate-seqs \
 
     #table.qzv: 特征表统计
     #rep-seqs.qzv: 代表序列统计，可点击序列跳转NCBI blast查看相近序列的信息
+    
+    
+    构建进化树用于多样性分析
+    time qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences rep-seqs.qza \
+  --o-alignment aligned-rep-seqs.qza \
+  --o-masked-alignment masked-aligned-rep-seqs.qza \
+  --o-tree unrooted-tree.qza \
+  --o-rooted-tree rooted-tree.qza
+    
+# aligned-rep-seqs.qza: 多序列比对结果。查看 | 下载
+# masked-aligned-rep-seqs.qza: 过滤去除高变区后的多序列比对结果。查看 | 下载
+# rooted-tree.qza: 有根树，用于多样性分析。查看 | 下载
+# unrooted-tree.qza: 无根树。查看 | 下载
+
+Alpha和beta多样性分析
+
+    α多样性
+        香农(Shannon’s)多样性指数（群落丰富度的定量度量，即包括丰富度richness和均匀度evenness两个层面）
+        可观测的OTU(Observed OTUs，群落丰富度的定性度量，只包括丰富度）
+        Faith’s系统发育多样性（包含特征之间的系统发育关系的群落丰富度的定性度量） 进化树距离
+        均匀度Evenness（或 Pielou’s均匀度；群落均匀度的度量）
+    β多样性
+        Jaccard距离（群落差异的定性度量，即只考虑种类，不考虑丰度）
+        Bray-Curtis距离（群落差异的定量度量，较常用）
+        非加权UniFrac距离（包含特征之间的系统发育关系的群落差异定性度量）
+        加权UniFrac距离（包含特征之间的系统发育关系的群落差异定量度量）
+
+一个重要参数是--p-sampling-dept
+指定重采样（即稀疏/稀疏rarefaction）深度。因为大多数多样指数对不同样本的不同测序深度敏感，所以这个脚本将随机地将每个样本的测序量重新采样至该参数值
+抽样数量 测序得到的序列数不一样，对多样性有很大的影响；多样性-抽平 重采样，采样到相同数据量
+老数据 1000；新数据 3-5w
+
+time qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table table.qza \
+  --p-sampling-depth 1103 \
+  --m-metadata-file sample-metadata.tsv \
+  --output-dir core-metrics-results
+
+
+    core-metrics-results/unweighted_unifrac_emperor.qzv：无权重的unifrac距离PCoA结果采用emperor可视化。
+    core-metrics-results/jaccard_emperor.qzv：jaccard距离PCoA结果采用emperor可视化。
+    core-metrics-results/bray_curtis_emperor.qzv： Bray-Curtis距离PCoA结果采用emperor可视化。  差异较大，易找到组间差别
+    core-metrics-results/weighted_unifrac_emperor.qzv： 有权重的unifrac距离PCoA结果采用emperor可视化。
+
+下载svg格式
+
+测试分类元数据列和alpha多样性数据之间的关系。为Faith系统发育多样性（群体丰富度的度量）和Evenness均匀度进行可视化操作。
+Alpha多样性组间显著性分析和可视化
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/faith_pd_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/evenness_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/evenness-group-significance.qzv
+
+faith 箱线图 KW检验 
+
+β多样性可视化计算，定义组 body site
+# 7s，多组或多样本时计算量指数增长
+time qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column body-site \
+  --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv \
+  --p-pairwise
+
+# 6s，多组或多样本时计算量指数增长
+time qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column subject \
+  --o-visualization core-metrics-results/unweighted-unifrac-subject-group-significance.qzv \
+  --p-pairwise
+  
+  基于一点 gut组内，以及gut组和其他组的关系；看统计表，q value=调整P值
+  
+  
+  自定义找到指定分类下最大的差异，主轴和时间条件下
+qiime emperor plot \
+  --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --p-custom-axes days-since-experiment-start \
+  --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
+
+qiime emperor plot \
+  --i-pcoa core-metrics-results/bray_curtis_pcoa_results.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --p-custom-axes days-since-experiment-start \
+  --o-visualization core-metrics-results/bray-curtis-emperor-days-since-experiment-start.qzv
+  
+ bray_curtis结果更明显
+ 
+ Alpha稀疏曲线
+ 随着测序量增大 整体曲线的变化过程
+ 可选分组，如果图中的线条在沿x轴的某个采样深度处看起来“平坦(level out)”（即斜率接近于零），这表明收集超过该采样深度的附加序列不太可能观测到新特征。
+          如果绘图中的线条没有变平，这可能是因为尚未充分观察样本的丰富度（由于测序的序列太少），或者它可能是在数据中仍然存在许多测序错误（被误认为是新的多样性）。
+ # 用时：笔记本1m13S，服务器40s，本步计算量较大。
+time qiime diversity alpha-rarefaction \
+  --i-table table.qza \
+  --i-phylogeny rooted-tree.qza \
+  --p-max-depth 4000 \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization alpha-rarefaction.qzv
+  
+  
+  lv2门 lv6属
+  
