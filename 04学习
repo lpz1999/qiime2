@@ -52,14 +52,72 @@ time qiime demux summarize \
   #两个用于质量过滤的参数：--p-trim-left m，它去除每个序列的前m个碱基(如引物、标签序列barcode)；等长，去除后面
                          --p-trunc-len n，它在位置n截断每个序列。这允许用户去除序列的低质量区域、引物或标签序列等
   
+  
   time qiime dada2 denoise-single \
   --i-demultiplexed-seqs demux.qza \
   --p-trim-left 0 \
   --p-trunc-len 120 \
-  #带源序列
   --o-representative-sequences rep-seqs-dada2.qza \
-  #特征表
   --o-table table-dada2.qza \
-  #统计过程
   --o-denoising-stats stats-dada2.qza
   
+  
+    #stats-dada2.qza: dada2计算统计结果。
+    #table-dada2.qza: 特征表。
+    #rep-seqs-dada2.qza: 代表序列。
+    
+    qiime metadata tabulate \
+  --m-input-file stats-dada2.qza \
+  --o-visualization stats-dada2.qzv
+
+  # input 输入
+  # filtered 过滤
+  # denoised 去噪
+  # non-chimeric 非嵌合体
+  
+  #改名便于下游分析
+  mv rep-seqs-dada2.qza rep-seqs.qza
+mv table-dada2.qza table.qza
+
+deblur
+#过滤 质控
+#demux-filtered.qza: 序列质量过滤后结果
+#demux-filter-stats.qza: 序列质量过滤后结果统计
+time qiime quality-filter q-score \
+ --i-demux demux.qza \
+ --o-filtered-sequences demux-filtered.qza \
+ --o-filter-stats demux-filter-stats.qza  
+ 
+#去噪
+#qiime deblur denoise-16S 需要一个用于质量过滤的参数，即截断位置n长度的序列的--p-trim-length n  Deblur开发人员建议将该值设置为质量分数中位数开始下降至低质量区时的长度 
+ time qiime deblur denoise-16S \
+  --i-demultiplexed-seqs demux-filtered.qza \
+  --p-trim-length 120 \
+  --o-representative-sequences rep-seqs-deblur.qza \
+  --o-table table-deblur.qza \
+  --p-sample-stats \
+  --o-stats deblur-stats.qza
+ 
+# 两种可视化方法
+qiime metadata tabulate \
+  --m-input-file demux-filter-stats.qza \
+  --o-visualization demux-filter-stats.qzv
+qiime deblur visualize-stats \
+  --i-deblur-stats deblur-stats.qza \
+  --o-visualization deblur-stats.qzv
+  
+  #sample-id 	total-input-reads 	total-retained-reads 	reads-truncated 	reads-too-short-after-truncation 	reads-exceeding-maximum-ambiguous-bases
+  #样本名      总输入读长          总保留高读长            截断的读长         截断后太短的读长                     超过最大模糊碱基的读长的数量统计
+  
+  特征表和特征序列汇总
+qiime feature-table summarize \
+  --i-table table.qza \
+  --o-visualization table.qzv \
+  --m-sample-metadata-file sample-metadata.tsv
+  
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+
+    #table.qzv: 特征表统计
+    #rep-seqs.qzv: 代表序列统计，可点击序列跳转NCBI blast查看相近序列的信息
