@@ -1,0 +1,21 @@
+# 定义工作目录变量，方便以后多次使用
+wd=~/github/lpz1999/qiime2
+mkdir -p $wd
+# 进入工作目录，是不是很简介，这样无论你在什么位置就可以快速回到项目文件夹
+cd $wd
+
+# 方法1. 进入QIIME 2 conda工作环境
+conda activate qiime2-2022.2
+# 这时我们的命令行前面出现 (qiime2-2021.2) 表示成功进入工作环境
+
+# 创建本节学习目录
+mkdir moving-pictures
+cd moving-pictures
+
+更改工作目录 cd current directory
+查看当前目录有哪些文件 ls
+创建文件夹 mkdir 文件夹名
+删除文件夹 rm -d 文件夹名  -d diretory缩写
+帮助 --help
+换行 \
+
