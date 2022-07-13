@@ -1,6 +1,6 @@
 #fastq格式
 Fastq格式是一种基于文本的存储生物序列和对应碱基（或氨基酸）质量的文件格式。最初由桑格研究所（Wellcome Trust Sanger Institute）开发出来，现已成为存储高通量测序数据的事实标准。
-![image](https://github.com/lpz1999/qiime2/blob/main/image/fastq%E7%A4%BA%E4%BE%8B.png)
+![image](https://github.com/lpz1999/qiime2/blob/3c81c7cab61a9c88e2e72806a845fab16d084883/image/fastq%E7%A4%BA%E4%BE%8B.png)
 
 每条read由4行字符构成：
 
