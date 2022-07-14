@@ -31,3 +31,9 @@ cd moving-pictures
 **断点续传** wget -c \
         -O "文件名" \
         "网址"
+
+### EMP标准混样单端数据
+**“EMP protocol” multiplexed single-end fastq**
+
+此类数据标准包括两个文件，扩展名均为`fastq.gz`，
+1. 一个是barcode文件，
